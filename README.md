@@ -55,25 +55,33 @@ It performs **safe, non-exploitive analysis** and produces a **single interactiv
 
 ### 3️⃣ Install dependencies
     pip install -r requirements.txt
+    pip install playwright (important for macos or linux)
+
 
 🚀 Usage Examples
 
 🔹 Basic scan
+    
     python endgame.py -u https://xyz.com
 
 🔹 Browser + diff scan
+    
     python endgame.py -u https://xyz.com --browser --diff
 
 🔹 Scan with cookie (authenticated surface)
+    
     python endgame.py -u https://xyz.com --cookie="session=admin; role=admin" --browser --diff
 
 🔹 API Intelligence using OpenApi
+    
     python endgame.py -u https://xyz.com --api-fuzz openapi.json
 
 🔹 Full power scan
+    
     python endgame.py -u https://xyz.com --cookie="session=aytdfguyas" --browser --api-fuzz openapi.json --diff
 
 📄 Output
+    
     A single HTML report is generated automatically.File name is derived from the domain.
 
     Example: output/reports/xyz.com.html
@@ -90,15 +98,28 @@ It performs **safe, non-exploitive analysis** and produces a **single interactiv
     Raw JSON (expandable)
 
 🛡️ Safety & Ethics
-    No exploitation
-    No payload fuzzing
-    No brute force
-    Designed for authorized testing only
-    Use only on targets you own or have permission to test.
+    
+    1. No exploitation
+    2. No payload fuzzing
+    3. No brute force
+    4. Designed for authorized testing only
+    5. Use only on targets you own or have permission to test.
 
 📌 Roadmap
-    Knowledge Graph visualization
-    Automatic OpenAPI extraction from JS
-    Attack surface scoring v2
-    Correlation engine (API ↔ JS ↔ Vulns)
-    Plugin system
+    
+    1. Knowledge Graph visualization
+    2. Automatic OpenAPI extraction from JS
+    3. Attack surface scoring v2
+    4. Correlation engine (API ↔ JS ↔ Vulns)
+    5. Plugin system
+
+📜 License
+
+    MIT License
+
+⭐ Author
+
+    Developed by Sudipta Karmakar(sudipta7431)
+    Security Researcher & Cybersecurity Analyst
+
+    If you find ENDGAME useful, consider giving it a ⭐ on GitHub.
