@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>ENDGAME v5 – Unified Intelligence Report</title>
+
+<style>
+body {
+  background:#0d1117;
+  color:#c9d1d9;
+  font-family: monospace;
+}
+h1,h2,h3 { color:#58a6ff; }
+input {
+  background:#161b22;
+  color:#c9d1d9;
+  border:1px solid #30363d;
+  padding:6px;
+  width:100%;
+  margin-bottom:10px;
+}
+.section {
+  border:1px solid #30363d;
+  border-radius:8px;
+  padding:12px;
+  margin-bottom:20px;
+}
+.card {
+  background:#161b22;
+  padding:10px;
+  margin:10px 0;
+  border-radius:6px;
+}
+.VERYHIGH { color:#ff5555; font-weight:bold; }
+.HIGH { color:#ffa657; }
+.MEDIUM { color:#f2cc60; }
+.LOW { color:#8b949e; }
+.LOGIC { color:#7ee787; font-weight:bold; }
+
+details summary {
+  cursor: pointer;
+  color: #58a6ff;
+}
+</style>
+</head>
+
+<body>
+
+<h1>ENDGAME v5 – Unified Recon Intelligence</h1>
+<p>Generated: __GENERATED__</p>
+
+<input id="search" placeholder="Search endpoints, sql, logic, graphql, admin, score">
+
+<div class="section">
+<h2>📍 Endpoint Intelligence & Priority</h2>
+<div id="endpoints"></div>
+</div>
+
+<div class="section">
+<h2>🧬 API Intelligence</h2>
+<div id="api"></div>
+</div>
+
+<div class="section">
+<h2>🧠 JavaScript Logic Intelligence</h2>
+<pre>__JS_LOGIC__</pre>
+</div>
+
+<div class="section">
+<h2>🧠 JavaScript Logic Graph</h2>
+<div id="jsgraph"></div>
+</div>
+
+<div class="section">
+<h2>🔗 GraphQL Intelligence</h2>
+<pre>__GRAPHQL__</pre>
+</div>
+
+<div class="section">
+  <h2>🧬 GraphQL Depth Intelligence</h2>
+  <div id="graphqlDepth"></div>
+</div>
+
+<div class="section">
+<h2>🔁 Attack Surface Diff</h2>
+<pre>__DIFF__</pre>
+</div>
+
+<div class="section">
+<h2>🧾 Raw Scan JSON (Complete)</h2>
+<details>
+  <summary>Click to expand raw JSON</summary>
+  <pre>__RAW_JSON__</pre>
+</details>
+</div>
+
+<script>
+const endpoints = __ENDPOINTS__;
+const apiIntel = __API_INTEL__;
+const search = document.getElementById("search");
+const container = document.getElementById("endpoints");
+const jsLogicGraph = __JS_LOGIC_GRAPH__ || [];
+const jsGraphContainer = document.getElementById("jsgraph");
+const graphqlDepth = __GRAPHQL_DEPTH__ || [];
+const graphqlDepthContainer = document.getElementById("graphqlDepth");
+
+function renderAPI() {
+  const apiDiv = document.getElementById("api");
+  apiDiv.innerHTML = "";
+
+  if (!apiIntel || apiIntel.length === 0) {
+    apiDiv.innerHTML = "<i>No API intelligence detected</i>";
+    return;
+  }
+
+  apiIntel
+    .sort((a,b) => (b.risk_score || 0) - (a.risk_score || 0))
+    .forEach(api => {
+      const div = document.createElement("div");
+      div.className = "card";
+
+      div.innerHTML = `
+        <b>${api.method} ${api.endpoint}</b><br>
+        <span class="${api.risk}">${api.risk}</span><br>
+        Auth Required: ${api.auth_required}<br>
+        Sensitive Params: ${api.sensitive_parameters?.join(", ") || "None"}<br>
+        Status: ${api.response?.status}<br>
+        Content-Type: ${api.response?.content_type}
+      `;
+
+      apiDiv.appendChild(div);
+    });
+}
+
+function render() {
+  container.innerHTML = "";
+  const q = search.value.toLowerCase();
+
+  endpoints
+    .sort((a,b) => (b.attack_surface_score?.score || 0) - (a.attack_surface_score?.score || 0))
+    .forEach(e => {
+
+      const text = JSON.stringify(e).toLowerCase();
+      if (q && !text.includes(q)) return;
+
+      const div = document.createElement("div");
+      div.className = "card";
+
+      let html = `<b>${e.endpoint}</b><br>`;
+
+      /* ================= SCORE ================= */
+      if (e.attack_surface_score) {
+        html += `<span class="VERYHIGH">
+          ${e.attack_surface_score.priority} (Score ${e.attack_surface_score.score})
+        </span><br>`;
+        html += `<i>${e.attack_surface_score.reasons.join(", ")}</i><br>`;
+      }
+
+      /* ================= ISSUES ================= */
+      if (e.issues && e.issues.length) {
+        html += `<details open>
+          <summary class="HIGH">Issues</summary>`;
+        e.issues.forEach(i => {
+          html += `🔴 <b>${i.vulnerability}</b> via <code>${i.parameter}</code><br>`;
+        });
+        html += `</details>`;
+      }
+
+      /* ================= BEHAVIOR ================= */
+      if (e.behavior && Object.keys(e.behavior).length) {
+        html += `<details>
+          <summary class="MEDIUM">Behavior</summary>
+          <pre>${JSON.stringify(e.behavior, null, 2)}</pre>
+        </details>`;
+      }
+
+      /* ================= DIFFERENTIAL ================= */
+      if (e.differential && Object.keys(e.differential).length) {
+        html += `<details>
+          <summary class="MEDIUM">Differential</summary>
+          <pre>${JSON.stringify(e.differential, null, 2)}</pre>
+        </details>`;
+      }
+
+      /* ================= SEMANTIC ================= */
+      if (e.semantic_diff && Object.keys(e.semantic_diff).length) {
+        html += `<details>
+          <summary class="LOGIC">Semantic Differences (Logic Bugs)</summary>
+          <pre>${JSON.stringify(e.semantic_diff, null, 2)}</pre>
+        </details>`;
+      }
+
+      div.innerHTML = html;
+      container.appendChild(div);
+    });
+}
+function renderJSLogicGraph() {
+  jsGraphContainer.innerHTML = "";
+  if (!jsLogicGraph || jsLogicGraph.length === 0) {
+    jsGraphContainer.innerHTML = "<i>No JavaScript logic graph detected</i>";
+    return;
+  }
+  jsLogicGraph.forEach(item => {
+    const div = document.createElement("div");
+    div.className = "card";
+    div.innerHTML = `
+      <b>Condition:</b> ${item.condition}<br>
+      <b>API:</b> <code>${item.api_call}</code><br>
+      <b>JS File:</b> ${item.js_file}<br>
+      <b>Confidence:</b> ${item.confidence}
+    `;
+    jsGraphContainer.appendChild(div);
+  });
+}
+
+function renderGraphQLDepth() {
+  graphqlDepthContainer.innerHTML = "";
+  if (!graphqlDepth.length) {
+    graphqlDepthContainer.innerHTML = "<i>No GraphQL depth intelligence detected</i>";
+    return;
+  }
+  graphqlDepth.forEach(g => {
+    const div = document.createElement("div");
+    div.className = "card";
+    div.innerHTML = `
+      <b>Endpoint:</b> ${g.endpoint}<br>
+      <b>Introspection:</b> ${g.introspection_enabled}<br>
+      <b>Depth Limited:</b> ${g.depth_limited}<br>
+      <b>Verbose Errors:</b> ${g.verbose_errors}<br>
+      <b>Notes:</b> ${g.notes.join(", ")}
+    `;
+    graphqlDepthContainer.appendChild(div);
+  });
+}
+document.addEventListener("DOMContentLoaded", () => {
+  search.oninput = () => {
+    render();
+    renderJSLogicGraph();
+    renderGraphQLDepth();
+    renderAPI();
+  };
+
+  render();
+  renderJSLogicGraph();
+  renderGraphQLDepth();
+  renderAPI();
+});
+</script>
+
+</body>
+</html>
